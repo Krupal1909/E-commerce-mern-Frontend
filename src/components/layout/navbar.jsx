@@ -101,7 +101,7 @@ const Navbar = () => {
               {/* Mobile Search */}
               <div className="mb-3">
                 <div className="relative">
-                  <input
+                  <input  
                     type="text"
                     placeholder="Search products"
                     value={searchQuery}

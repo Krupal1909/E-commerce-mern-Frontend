@@ -7,7 +7,7 @@ import { BrowserRouter, Route, Router, Routes } from "react-router-dom";
 import Login from "./components/auth/login";
 import Register from "./components/auth/register";
 import Navbar from "./components/layout/navbar";
-import Footer from "./components/layout/footer";
+// import Footer from "./components/layout/footer";
 import Home from "./components/home/home";
 import Cart from "./components/cart/cart";
 import Product from "./components/products/product";
@@ -22,6 +22,7 @@ const App = () => {
     <>
       <BrowserRouter>
         <Navbar />
+        {/* <Footer> */}
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -35,7 +36,7 @@ const App = () => {
           <Route path="/seller" element={<Seller />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-        <Footer />
+        {/* </Footer>/ */}
         <Toaster />
       </BrowserRouter>
     </>
