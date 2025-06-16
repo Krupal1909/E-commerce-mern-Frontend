@@ -103,7 +103,7 @@ const Footer = () => {
                   YouTube
                 </a>
               </li>
-            </ul>
+            </ul> 
           </div>
         </div>
 

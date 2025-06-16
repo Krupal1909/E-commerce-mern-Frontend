@@ -129,7 +129,7 @@ const Navbar = () => {
                 href="#"
                 className="block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md transition-colors font-medium"
               >
-                All Products
+                All Products 
               </a>
               <a
                 href="#"
