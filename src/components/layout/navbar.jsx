@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Search, ShoppingCart, Menu, X, User } from 'lucide-react';
-
+import { useNavigate } from 'react-router-dom';
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-
+  const navigate = useNavigate();
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -19,66 +19,78 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <img src="../../../public/assets/logo.svg" alt="Logo" className="h-8  hidden md:block mr-auto" />
-      
-
-          {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center space-x-8">
-          <a href="#" className="text-gray-700 transition-colors font-medium rounded-3xl">
-              Seller Dashboard
-            </a>
-            <a href="#" className="text-gray-700  transition-colors font-medium">
-              Home
-            </a>
-            <a href="#" className="text-gray-700  transition-colors font-medium">
-              All Products
-            </a>
-            
+          <div className="flex-shrink-0">
+            <img src="../../../public/assets/logo.svg" alt="Logo" className="h-8 cursor-pointer" />
           </div>
 
-          {/* Search Bar */}
-          <div className="hidden md:flex flex-1 max-w-md mx-8">
-            <form onSubmit={handleSearch} className="w-full">
+          {/* Navigation & Search */}
+          <div className="flex items-center space-x-6">
+            {/* Desktop Links */}
+            <div className="hidden md:flex items-center space-x-6">
+              <a
+                href="#"
+                className="border border-gray-300 px-3 py-1 rounded-full text-xs cursor-pointer opacity-80 font-semibold hover:border-green-500 transition-colors"
+                onClick={() => navigate('/seller')}
+              >
+                Seller Dashboard
+              </a>
+              <a
+                href="#"
+                className="text-gray-700 text-[15px] font-semibold transition-colors"
+              >
+                Home
+              </a>
+              <a
+                href="#"
+                className="text-gray-700 text-[15px] font-semibold transition-colors"
+              >
+                All Products
+              </a>
+            </div>
+
+            {/* Desktop Search */}
+            <div className="hidden md:flex">
               <div className="relative">
                 <input
                   type="text"
                   placeholder="Search products"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)}
+                  className="w-64 pl-4 pr-10 py-2 border border-gray-300 rounded-full focus:outline-none  text-sm"
                 />
                 <button
-                  type="submit"
-                  className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-green-500 transition-colors"
+                  onClick={handleSearch}
+                  className="absolute right-0 top-0 h-full px-3 text-gray-400 transition-colors"
                 >
-                  <Search className="w-5 h-5" />
+                  <Search className="w-4 h-4" />
                 </button>
               </div>
-            </form>
-          </div>
+            </div>
 
-          {/* Right Side Icons */}
-          <div className="flex items-center space-x-4">
-            {/* Cart Icon */}
-            <button className="relative p-2 text-gray-700 hover:text-green-500 transition-colors">
-              <ShoppingCart className="w-6 h-6" />
-              <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                2
-              </span>
-            </button>
+            {/* Icons + Mobile Menu */}
+            <div className="flex items-center space-x-2">
+              {/* Cart Icon */}
+              <button className="relative p-2 text-gray-700 transition-colors">
+                <ShoppingCart className="w-5 h-5 cursor-pointer" />
+                <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
+                  2
+                </span>
+              </button>
 
-            {/* User Profile */}
-            <button className="p-2 text-gray-700 hover:text-green-500 transition-colors">
-              <User className="w-6 h-6" />
-            </button>
+              {/* User Icon */}
+              <button className="p-2 text-gray-700 transition-colors">
+                <User className="w-5 h-5 cursor-pointer" />
+              </button>
 
-            {/* Mobile Menu Button */}
-            <button
-              onClick={toggleMenu}
-              className="md:hidden p-2 text-gray-700 hover:text-green-500 transition-colors"
-            >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+              {/* Mobile Menu Toggle */}
+              <button
+                onClick={toggleMenu}
+                className="md:hidden p-2 text-gray-700 transition-colors"
+              >
+                {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -88,41 +100,40 @@ const Navbar = () => {
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
               {/* Mobile Search */}
               <div className="mb-3">
-                <form onSubmit={handleSearch} className="w-full">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Search products"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    />
-                    <button
-                      type="submit"
-                      className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-green-500 transition-colors"
-                    >
-                      <Search className="w-5 h-5" />
-                    </button>
-                  </div>
-                </form>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search products"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)}
+                    className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2  focus:border-transparent"
+                  />
+                  <button
+                    onClick={handleSearch}
+                    className="absolute right-0 top-0 h-full px-3 text-gray-400  transition-colors"
+                  >
+                    <Search className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
-              {/* Mobile Navigation Links */}
+              {/* Mobile Links */}
               <a
                 href="#"
-                className="block px-3 py-2 text-gray-700 hover:text-green-500 hover:bg-gray-50 rounded-md transition-colors font-medium"
+                className="block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md transition-colors font-medium"
               >
                 Home
               </a>
               <a
                 href="#"
-                className="block px-3 py-2 text-gray-700 hover:text-green-500 hover:bg-gray-50 rounded-md transition-colors font-medium"
+                className="block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md transition-colors font-medium"
               >
                 All Products
               </a>
               <a
                 href="#"
-                className="block px-3 py-2 text-gray-700 hover:text-green-500 hover:bg-gray-50 rounded-md transition-colors font-medium"
+                className="block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md transition-colors font-medium"
               >
                 Seller Dashboard
               </a>
