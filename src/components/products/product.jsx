@@ -21,7 +21,7 @@ const AllProducts = () => {
 
   return (
     <div style={{ padding: "32px", position: "relative" }}>
-      <h5 className="text-2xl font-medium uppercase">ALL PRODUCTS</h5>
+      <h5 className="text-2xl font-medium uppercase p-4">ALL PRODUCTS</h5>
       
       {/* Shopping Cart Button */}
       <div style={{
@@ -64,12 +64,14 @@ const AllProducts = () => {
         </button>
       </div>
 
-      <div
+      <div 
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+
           gap: "32px",
           marginTop: "32px",
+
         }}
       >
         {products.map((product) => {
@@ -91,6 +93,7 @@ const AllProducts = () => {
             >
               <img
                 src={product.image}
+                className="hover:scale-150 transition-transform duration-300 ease-in-out"
                 alt={product.name}
                 style={{ width: 120, height: 110, objectFit: "contain" }}
               />

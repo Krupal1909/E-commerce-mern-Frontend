@@ -3,6 +3,7 @@ import "./App.css";
 import { Context } from "./main";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Login from "./components/auth/login";
+import Logout from "./components/auth/logout";
 import Register from "./components/auth/register";
 import Navbar from "./components/layout/navbar";
 import Home from "./components/home/home";
@@ -12,7 +13,8 @@ import Category from "./components/category/category";
 import Order from "./components/orders/order";
 import NotFound from "./components/notFound/notFound";
 import Seller from "./components/seller/seller";
-import AddAddress from "./components/address/addAddress"; // Adjust path as needed
+import ProductsByCategory from "./components/category/productByCategory";
+import AddAddress from "./components/address/addAddress"; 
 import { Toaster } from "react-hot-toast";
 import { CartProvider } from "../contexts/cartContexts";
 
@@ -24,6 +26,7 @@ const App = () => {
           <Navbar />
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/logout" element={<Logout />} />
             <Route path="/register" element={<Register />} />
             <Route path="/" element={<Home />} />
             <Route path="/cart" element={<Cart />} />
@@ -33,6 +36,7 @@ const App = () => {
             <Route path="/my-order" element={<Order />} />
             <Route path="/category/:id" element={<Category />} />
             <Route path="/seller" element={<Seller />} />
+            <Route path="/products/:categoryName" element={<ProductsByCategory />} />
             <Route path="/add-address" element={<AddAddress />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
