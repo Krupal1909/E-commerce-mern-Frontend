@@ -1,55 +1,39 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
-const categories = [
-  {
-    title: 'Organic veggies',
-    image: '../../../public/assets/vegatable.png',
-    bgColor: 'bg-yellow-100',
-  },
-  {
-    title: 'Fresh Fruits',
-    image: '../../../public/assets/fruits.png',
-    bgColor: 'bg-red-100',
-  },
-  {
-    title: 'Cold Drinks',
-    image: '../../../public/assets/bottle.png',
-    bgColor: 'bg-green-100',
-  },
-  {
-    title: 'Instant Food',
-    image: '../../../public/assets/maggie.png',
-    bgColor: 'bg-teal-100',
-  },
-  {
-    title: 'Dairy Products',
-    image: '../../../public/assets/dairy.png',
-    bgColor: 'bg-orange-100',
-  },
-  {
-    title: 'Bakery & Breads',
-    image: '../../../public/assets/bread.png',
-    bgColor: 'bg-blue-100',
-  },
-  {
-    title: 'Grains & Cereals',
-    image: '../../../public/assets/masala.png',
-    bgColor: 'bg-purple-100',
-  },
-];
+const Category = () => {
+  const [categories, setCategories] = useState([]);
+  const BASE_URL = 'http://localhost:5000'; // Your backend URL
 
-const category = () => {
+  useEffect(() => {
+    axios.get('http://localhost:5000/api/category/get-category')
+      .then(res => {
+        console.log("API Response:", res.data);
+        setCategories(res.data.categories);
+      })
+      .catch(err => console.error("Error fetching categories", err));
+  }, []);
+
   return (
     <section className="max-w-7xl mx-auto px-4 py-12">
       <h4 className="text-2xl md:text-xl font-semibold font-outfit text-slate-700 mb-4">Categories</h4>
+
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-6 mb-4">
-        {categories.map((cat, idx) => (
+        {Array.isArray(categories) && categories.map((cat) => (
           <div
-            key={idx}
-            className={`rounded-xl p-4 flex flex-col items-center justify-center ${cat.bgColor} hover:shadow-md transition duration-300 ease-in-out`}
+            key={cat._id}
+            className="rounded-xl p-4 flex flex-col items-center justify-center bg-yellow-100 hover:shadow-md transition duration-300 ease-in-out"
           >
-            <img src={cat.image} alt={cat.title} className="w-20 h-20 object-contain mb-4" />
-            <p className="font-[14px] text-slate-800 font-outfit text-center">{cat.title}</p>
+            <img 
+              src={cat.image.startsWith('http') ? cat.image : `${BASE_URL}${cat.image}`} 
+              alt={cat.name} 
+              className="w-20 h-20 object-contain mb-4"
+              onError={(e) => {
+                console.error("Image failed to load:", e.target.src);
+                e.target.src = '/placeholder-image.png'; // Optional fallback
+              }}
+            />
+            <p className="font-[14px] text-gray-700 font-outfit text-center">{cat.name}</p>
           </div>
         ))}
       </div>
@@ -57,4 +41,4 @@ const category = () => {
   );
 };
 
-export default category;
+export default Category;
