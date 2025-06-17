@@ -1,5 +1,8 @@
 import React from "react";
 import Category from "../category/category"; 
+import Banner from "../banner/banner";
+import Email from "../emailSection/email"
+import Footer from "../layout/footer";
 const Home = () => {
   return (
     <>
@@ -65,6 +68,9 @@ const Home = () => {
       </div>
     </div>
     <Category />
+    <Banner />
+    <Email />
+    <Footer />
     </>
   );
 };

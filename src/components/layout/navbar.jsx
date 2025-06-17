@@ -10,9 +10,9 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../../contexts/cartContexts";
-import AuthModal from "../auth/authModel"; // Adjust path as needed
+import AuthModal from "../auth/authModel";
 
-// Auth utilities (add this to your existing authUtils or create new file)
+// Auth utilities
 const authUtils = {
   isAuthenticated: () => {
     const token = localStorage.getItem("token");
@@ -36,7 +36,7 @@ const authUtils = {
   },
 };
 
-// User Dropdown Component - ADD THIS NEW COMPONENT
+// User Dropdown Component
 const UserDropdown = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -57,7 +57,7 @@ const UserDropdown = ({ user, onLogout }) => {
 
   const handleMyOrders = () => {
     setIsOpen(false);
-    navigate("/my-orders"); // Navigate to orders page
+    navigate("/my-orders");
   };
 
   const handleLogout = () => {
@@ -114,29 +114,39 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-
-  // ADD THESE NEW STATE VARIABLES
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [allProducts, setAllProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+  const searchRef = useRef(null);
 
   const navigate = useNavigate();
   const { getTotalItems } = useCart();
-
   const totalItems = getTotalItems();
 
-  // ADD THIS NEW useEffect
+  // Fetch all products on component mount
   useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/product/get-product");
+        const data = await response.json();
+        setAllProducts(Array.isArray(data) ? data : data.products || []);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+
+    fetchProducts();
+
     const checkAuth = () => {
       const authenticated = authUtils.isAuthenticated();
       const currentUser = authUtils.getCurrentUser();
-
       setIsAuthenticated(authenticated);
       setUser(currentUser);
     };
 
     checkAuth();
-
-    // Listen for storage changes (for when user logs in/out in another tab)
     window.addEventListener("storage", checkAuth);
 
     return () => {
@@ -144,13 +154,56 @@ const Navbar = () => {
     };
   }, []);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+  // Handle clicks outside search to close results
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowResults(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Filter products locally as user types
+  const handleSearchChange = (e) => {
+    const query = e.target.value.toLowerCase();
+    setSearchQuery(query);
+    setShowResults(query.length > 0);
+
+    if (query.length < 2) {
+      setFilteredProducts([]);
+      return;
+    }
+
+    const filtered = allProducts.filter(product => 
+      product.name.toLowerCase().includes(query) ||
+      (product.description && product.description.toLowerCase().includes(query)) ||
+      (product.category && (
+        (typeof product.category === 'string' && product.category.toLowerCase().includes(query)) ||
+        (product.category.name && product.category.name.toLowerCase().includes(query))
+      ))
+    );
+
+    setFilteredProducts(filtered);
   };
 
-  const handleSearch = (e) => {
+  const handleSearchSubmit = (e) => {
     e.preventDefault();
-    console.log("Searching for:", searchQuery);
+    if (searchQuery.trim()) {
+      navigate(`/product?q=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      navigate("/product");
+    }
+    setShowResults(false);
+    setIsMenuOpen(false);
+  };
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
   };
 
   const handleLogin = () => {
@@ -158,10 +211,8 @@ const Navbar = () => {
     setIsMenuOpen(false);
   };
 
-  // MODIFY THIS FUNCTION
   const closeAuthModal = () => {
     setIsAuthModalOpen(false);
-    // Recheck auth status after modal closes
     setTimeout(() => {
       const authenticated = authUtils.isAuthenticated();
       const currentUser = authUtils.getCurrentUser();
@@ -170,9 +221,15 @@ const Navbar = () => {
     }, 100);
   };
 
-  // ADD THIS NEW FUNCTION
   const handleLogout = () => {
     authUtils.logout();
+  };
+
+  const handleResultClick = (productId) => {
+    navigate(`/product/${productId}`);
+    setSearchQuery("");
+    setShowResults(false);
+    setIsMenuOpen(false);
   };
 
   return (
@@ -218,21 +275,59 @@ const Navbar = () => {
 
               {/* Desktop Search */}
               <div className="hidden md:flex">
-                <div className="relative">
+                <div className="relative" ref={searchRef}>
                   <input
                     type="text"
-                    placeholder="Search products"
+                    placeholder="Search products..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && handleSearch(e)}
+                    onChange={handleSearchChange}
+                    onKeyPress={(e) => e.key === "Enter" && handleSearchSubmit(e)}
+                    onFocus={() => setShowResults(searchQuery.length > 0)}
                     className="w-64 pl-4 pr-10 py-2 border border-gray-300 rounded-full focus:outline-none text-sm"
                   />
                   <button
-                    onClick={handleSearch}
+                    onClick={handleSearchSubmit}
                     className="absolute right-0 top-0 h-full px-3 text-gray-400 transition-colors"
                   >
                     <Search className="w-4 h-4" />
                   </button>
+
+                  {/* Search Results Dropdown */}
+                  {showResults && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+                      {filteredProducts.length > 0 ? (
+                        <ul>
+                          {filteredProducts.map((product) => (
+                            <li
+                              key={product._id || product.id}
+                              className="px-4 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                              onClick={() => handleResultClick(product._id || product.id)}
+                            >
+                              <div className="flex items-center">
+                                <img
+                                  src={product.image}
+                                  alt={product.name}
+                                  className="w-10 h-10 object-cover mr-3"
+                                />
+                                <div>
+                                  <p className="font-medium text-gray-800">
+                                    {product.name}
+                                  </p>
+                                  <p className="text-sm text-gray-500">
+                                    ${product.price}
+                                  </p>
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <div className="px-4 py-3 text-gray-500 text-center">
+                          {searchQuery.length >= 2 ? "No products found" : "Type at least 2 characters"}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -251,7 +346,7 @@ const Navbar = () => {
                   )}
                 </button>
 
-                {/* REPLACE THE USER ICON AND LOGIN BUTTON SECTION WITH THIS */}
+                {/* User Dropdown or Login */}
                 {isAuthenticated && user ? (
                   <UserDropdown user={user} onLogout={handleLogout} />
                 ) : (
@@ -291,22 +386,60 @@ const Navbar = () => {
             <div className="md:hidden">
               <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
                 {/* Mobile Search */}
-                <div className="mb-3">
+                <div className="mb-3" ref={searchRef}>
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder="Search products"
+                      placeholder="Search products..."
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyPress={(e) => e.key === "Enter" && handleSearch(e)}
+                      onChange={handleSearchChange}
+                      onKeyPress={(e) => e.key === "Enter" && handleSearchSubmit(e)}
+                      onFocus={() => setShowResults(searchQuery.length > 0)}
                       className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
                     />
                     <button
-                      onClick={handleSearch}
+                      onClick={handleSearchSubmit}
                       className="absolute right-0 top-0 h-full px-3 text-gray-400 transition-colors"
                     >
                       <Search className="w-5 h-5" />
                     </button>
+
+                    {/* Mobile Search Results */}
+                    {showResults && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+                        {filteredProducts.length > 0 ? (
+                          <ul>
+                            {filteredProducts.map((product) => (
+                              <li
+                                key={product._id || product.id}
+                                className="px-4 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                onClick={() => handleResultClick(product._id || product.id)}
+                              >
+                                <div className="flex items-center">
+                                  <img
+                                    src={product.image}
+                                    alt={product.name}
+                                    className="w-10 h-10 object-cover mr-3"
+                                  />
+                                  <div>
+                                    <p className="font-medium text-gray-800">
+                                      {product.name}
+                                    </p>
+                                    <p className="text-sm text-gray-500">
+                                      ${product.price}
+                                    </p>
+                                  </div>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <div className="px-4 py-3 text-gray-500 text-center">
+                            {searchQuery.length >= 2 ? "No products found" : "Type at least 2 characters"}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -333,7 +466,7 @@ const Navbar = () => {
                   Seller Dashboard
                 </a>
 
-                {/* REPLACE THE MOBILE LOGIN BUTTON SECTION WITH THIS */}
+                {/* Mobile Login/User Section */}
                 {isAuthenticated && user ? (
                   <>
                     <div className="border-t border-gray-200 pt-2 mt-2">
@@ -352,8 +485,8 @@ const Navbar = () => {
                       </a>
                       <button
                         onClick={() => {
-                          localStorage.removeItem("token");
-                          navigate("/login");
+                          handleLogout();
+                          setIsMenuOpen(false);
                         }}
                         className="block w-full text-left px-3 py-2 text-red-600 hover:bg-gray-50 rounded-md transition-colors font-medium"
                       >

@@ -12,8 +12,21 @@ const Cart = () => {
   const [loading, setLoading] = useState(true);
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Cash On Delivery');
-  const [showAddressForm, setShowAddressForm] = useState(false); // New state
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
   const navigate = useNavigate();
+
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+    
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   // Fetch product details for cart items
   useEffect(() => {
@@ -79,28 +92,114 @@ const Cart = () => {
     removeFromCart(productId);
   };
 
-  // New function to handle address change
   const handleChangeAddress = () => {
     setShowAddressForm(true);
   };
 
-  // New function to handle address save
   const handleSaveAddress = (newAddress) => {
     setDeliveryAddress(newAddress);
     setShowAddressForm(false);
   };
 
-  // New function to go back from address form
   const handleBackFromAddress = () => {
     setShowAddressForm(false);
   };
 
-  const handlePlaceOrder = async () => {
-    if (!deliveryAddress.trim()) {
-      alert('Please add a delivery address');
-      return;
+  // Create Razorpay order
+  const createRazorpayOrder = async (amount) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/payment/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: Math.round(amount * 100), // Convert to paise
+          currency: 'INR'
+        })
+      });
+      
+      const order = await response.json();
+      return order;
+    } catch (error) {
+      console.error('Error creating Razorpay order:', error);
+      throw error;
     }
+  };
 
+  // Handle Razorpay payment
+  const handleRazorpayPayment = async () => {
+    try {
+      setProcessingPayment(true);
+      
+      // Create order on backend
+      const order = await createRazorpayOrder(totalAmount);
+      
+      const options = {
+         key: 'rzp_test_2Y8nSYbNfsleHw',
+        amount: order.amount,
+        currency: order.currency,
+        name: 'Your Store Name',
+        description: 'Order Payment',
+        order_id: order.id,
+        handler: async function (response) {
+          // Payment successful
+          try {
+            // Verify payment on backend
+            const verifyResponse = await fetch('http://localhost:5000/api/payment/verify', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              })
+            });
+
+            const verifyResult = await verifyResponse.json();
+            
+            if (verifyResult.success) {
+              // Create order after successful payment
+              await createOrder(response.razorpay_payment_id);
+            } else {
+              alert('Payment verification failed');
+            }
+          } catch (error) {
+            console.error('Payment verification error:', error);
+            alert('Payment verification failed');
+          }
+        },
+        prefill: {
+          name: 'Customer Name',
+          email: 'customer@example.com',
+          contact: '9999999999'
+        },
+        notes: {
+          address: deliveryAddress
+        },
+        theme: {
+          color: '#10B981' // Green color matching your theme
+        },
+        modal: {
+          ondismiss: function() {
+            setProcessingPayment(false);
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      console.error('Error initiating payment:', error);
+      alert('Failed to initiate payment');
+      setProcessingPayment(false);
+    }
+  };
+
+  // Create order after successful payment
+  const createOrder = async (paymentId = null) => {
     try {
       const orderData = {
         items: cartProducts.map(product => ({
@@ -115,10 +214,11 @@ const Cart = () => {
         tax,
         totalAmount,
         deliveryAddress,
-        paymentMethod
+        paymentMethod,
+        paymentId, // Include payment ID for online payments
+        paymentStatus: paymentMethod === 'Cash On Delivery' ? 'pending' : 'completed'
       };
 
-      // Replace with your actual order endpoint
       const response = await fetch('http://localhost:5000/api/order/create-order', {
         method: 'POST',
         headers: {
@@ -137,6 +237,25 @@ const Cart = () => {
     } catch (error) {
       console.error('Error placing order:', error);
       alert('Error placing order. Please try again.');
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
+  const handlePlaceOrder = async () => {
+    if (!deliveryAddress.trim()) {
+      alert('Please add a delivery address');
+      return;
+    }
+
+    // Handle different payment methods
+    if (paymentMethod === 'Cash On Delivery') {
+      await createOrder();
+    } else if (paymentMethod === 'Razorpay') {
+      await handleRazorpayPayment();
+    } else {
+      // For other online payment methods, redirect to Razorpay
+      await handleRazorpayPayment();
     }
   };
 
@@ -221,14 +340,14 @@ const Cart = () => {
                     <div>
                       <h3 className="font-semibold text-gray-800">{product.name}</h3>
                       <p className="text-sm text-gray-500">Weight: {product.weight || 'N/A'}</p>
-                      <p className="text-sm text-gray-500">Price: ${product.price}</p>
+                      <p className="text-sm text-gray-500">Price: ₹{product.price}</p>
                     </div>
                   </div>
 
                   {/* Subtotal */}
                   <div className="col-span-2 flex items-center justify-center">
                     <span className="font-semibold text-gray-800">
-                      ${(product.price * product.quantity).toFixed(2)}
+                      ₹{(product.price * product.quantity).toFixed(2)}
                     </span>
                   </div>
 
@@ -302,6 +421,7 @@ const Cart = () => {
                 className="w-full p-3 border rounded-lg"
               >
                 <option value="Cash On Delivery">Cash On Delivery</option>
+                <option value="Razorpay">Online Payment (Razorpay)</option>
                 <option value="Credit Card">Credit Card</option>
                 <option value="Debit Card">Debit Card</option>
                 <option value="UPI">UPI</option>
@@ -312,36 +432,36 @@ const Cart = () => {
             <div className="space-y-3 mb-6">
               <div className="flex justify-between">
                 <span className="text-gray-600">Price</span>
-                <span className="font-semibold">${subtotal.toFixed(2)}</span>
+                <span className="font-semibold">₹{subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Shipping Fee</span>
                 <span className={`font-semibold ${shippingFee === 0 ? 'text-green-500' : ''}`}>
-                  {shippingFee === 0 ? 'Free' : `$${shippingFee.toFixed(2)}`}
+                  {shippingFee === 0 ? 'Free' : `₹${shippingFee.toFixed(2)}`}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Tax (2%)</span>
-                <span className="font-semibold">${tax.toFixed(2)}</span>
+                <span className="font-semibold">₹{tax.toFixed(2)}</span>
               </div>
               <hr />
               <div className="flex justify-between text-lg font-bold">
                 <span>Total Amount:</span>
-                <span className="text-green-600">${totalAmount.toFixed(2)}</span>
+                <span className="text-green-600">₹{totalAmount.toFixed(2)}</span>
               </div>
             </div>
 
             {/* Place Order Button */}
             <button
               onClick={handlePlaceOrder}
-              disabled={!deliveryAddress}
+              disabled={!deliveryAddress || processingPayment}
               className={`w-full py-3 rounded-lg font-semibold transition-colors ${
-                deliveryAddress 
+                deliveryAddress && !processingPayment
                   ? 'bg-green-500 text-white hover:bg-green-600' 
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >
-              Place Order
+              {processingPayment ? 'Processing...' : 'Place Order'}
             </button>
           </div>
         </div>
