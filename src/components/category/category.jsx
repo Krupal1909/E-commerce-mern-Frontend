@@ -27,7 +27,7 @@ const Category = () => {
             <img 
               src={cat.image.startsWith('http') ? cat.image : `${BASE_URL}${cat.image}`} 
               alt={cat.name} 
-              className="w-20 h-20 object-contain mb-4"
+              className="w-20 h-20 object-contain mb-4 hover:scale-150 transition-transform duration-300 ease-in-out"
               onError={(e) => {
                 console.error("Image failed to load:", e.target.src);
                 e.target.src = '/placeholder-image.png'; // Optional fallback

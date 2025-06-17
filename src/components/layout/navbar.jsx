@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
 import { Search, ShoppingCart, Menu, X, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useCart } from '../../../contexts/cartContexts'; // Adjust path as needed
+
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const { getTotalItems } = useCart();
+
+  const totalItems = getTotalItems();
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -19,7 +25,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0" onClick={() => navigate('/')}>
             <img src="../../../public/assets/logo.svg" alt="Logo" className="h-8 cursor-pointer" />
           </div>
 
@@ -37,12 +43,14 @@ const Navbar = () => {
               <a
                 href="#"
                 className="text-gray-700 text-[15px] font-semibold transition-colors"
+                onClick={() => navigate('/')}
               >
                 Home
               </a>
               <a
                 href="#"
                 className="text-gray-700 text-[15px] font-semibold transition-colors"
+                onClick={() => navigate('/product')}
               >
                 All Products
               </a>
@@ -57,7 +65,7 @@ const Navbar = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)}
-                  className="w-64 pl-4 pr-10 py-2 border border-gray-300 rounded-full focus:outline-none  text-sm"
+                  className="w-64 pl-4 pr-10 py-2 border border-gray-300 rounded-full focus:outline-none text-sm"
                 />
                 <button
                   onClick={handleSearch}
@@ -70,12 +78,17 @@ const Navbar = () => {
 
             {/* Icons + Mobile Menu */}
             <div className="flex items-center space-x-2">
-              {/* Cart Icon */}
-              <button className="relative p-2 text-gray-700 transition-colors">
+              {/* Cart Icon with dynamic count */}
+              <button 
+                className="relative p-2 text-gray-700 transition-colors"
+                onClick={() => navigate('/cart')}
+              >
                 <ShoppingCart className="w-5 h-5 cursor-pointer" />
-                <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
-                  2
-                </span>
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
+                    {totalItems}
+                  </span>
+                )}
               </button>
 
               {/* User Icon */}
@@ -107,11 +120,11 @@ const Navbar = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)}
-                    className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2  focus:border-transparent"
+                    className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
                   />
                   <button
                     onClick={handleSearch}
-                    className="absolute right-0 top-0 h-full px-3 text-gray-400  transition-colors"
+                    className="absolute right-0 top-0 h-full px-3 text-gray-400 transition-colors"
                   >
                     <Search className="w-5 h-5" />
                   </button>
@@ -122,18 +135,21 @@ const Navbar = () => {
               <a
                 href="#"
                 className="block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md transition-colors font-medium"
+                onClick={() => navigate('/')}
               >
                 Home
               </a>
               <a
                 href="#"
                 className="block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md transition-colors font-medium"
+                onClick={() => navigate('/product')}
               >
                 All Products 
               </a>
               <a
                 href="#"
                 className="block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md transition-colors font-medium"
+                onClick={() => navigate('/seller')}
               >
                 Seller Dashboard
               </a>
