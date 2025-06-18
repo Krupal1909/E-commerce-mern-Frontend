@@ -22,11 +22,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
   };
 
   // API Configuration
-  const API_BASE_URL = 'http://localhost:5000/api/auth'; // Replace with your API URL
+  const API_BASE_URL = 'https://e-commerce-mern-backend-5izw.onrender.com'; 
 
   // Login API call
   const loginUser = async (email, password) => {
-    const response = await fetch(`${API_BASE_URL}/login`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -45,7 +45,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
 
   // Register API call
   const registerUser = async (userData) => {
-    const response = await fetch(`${API_BASE_URL}/register`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

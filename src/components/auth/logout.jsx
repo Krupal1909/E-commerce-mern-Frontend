@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 
 const Logout = () => {
   const navigate = useNavigate();
-
+    const API_BASE_URL = 'https://e-commerce-mern-backend-5izw.onrender.com'; 
   const handleLogout = async () => {
     try {
       // Optional: Call backend logout API if available
-      await fetch("http://localhost:5000/api/auth/logout", {
+      await fetch(`${API_BASE_URL}/api/auth/logout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

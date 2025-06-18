@@ -6,7 +6,7 @@ const AllProducts = () => {
   const { cart, addToCart, increaseQuantity, decreaseQuantity, getTotalItems } = useCart();
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/product/get-product")
+    fetch("https://e-commerce-mern-backend-5izw.onrender.com/api/product/get-product")
       .then(res => res.json())
       .then(data => {
         setProducts(Array.isArray(data) ? data : data.products || []);

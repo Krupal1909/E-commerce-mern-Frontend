@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 const Category = () => {
   const [categories, setCategories] = useState([]);
-  const BASE_URL = 'http://localhost:5000';
+  const BASE_URL = 'https://e-commerce-mern-backend-5izw.onrender.com';
 
   useEffect(() => {
     axios.get(`${BASE_URL}/api/category/get-category`)
