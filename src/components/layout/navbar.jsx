@@ -129,7 +129,7 @@ const Navbar = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/product/get-product");
+        const response = await fetch("https://e-commerce-mern-backend-5izw.onrender.com/api/product/get-product");
         const data = await response.json();
         setAllProducts(Array.isArray(data) ? data : data.products || []);
       } catch (error) {
