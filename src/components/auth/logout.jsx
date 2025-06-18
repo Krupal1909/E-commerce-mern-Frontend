@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 const Logout = () => {
   const navigate = useNavigate();
-    const API_BASE_URL = 'https://e-commerce-mern-backend-g3uu.onrender.com'; 
+    const API_BASE_URL = 'https://e-commerce-mern-backend-en61.onrender.com'; 
   const handleLogout = async () => {
     try {
       // Optional: Call backend logout API if available

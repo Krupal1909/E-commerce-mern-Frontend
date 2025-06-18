@@ -42,7 +42,7 @@ const Cart = () => {
         const productIds = Object.keys(cart);
         
         // Fetch all products from backend
-        const response = await fetch('https://e-commerce-mern-backend-g3uu.onrender.com/api/product/get-product');
+        const response = await fetch('https://e-commerce-mern-backend-en61.onrender.com/api/product/get-product');
         const data = await response.json();
         const allProducts = Array.isArray(data) ? data : data.products || [];
         
@@ -108,7 +108,7 @@ const Cart = () => {
   // Create Razorpay order
   const createRazorpayOrder = async (amount) => {
     try {
-      const response = await fetch('https://e-commerce-mern-backend-g3uu.onrender.com/api/payment/create-order', {
+      const response = await fetch('https://e-commerce-mern-backend-en61.onrender.com/api/payment/create-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -146,7 +146,7 @@ const Cart = () => {
           // Payment successful
           try {
             // Verify payment on backend
-            const verifyResponse = await fetch('https://e-commerce-mern-backend-g3uu.onrender.com/api/payment/verify', {
+            const verifyResponse = await fetch('https://e-commerce-mern-backend-en61.onrender.com/api/payment/verify', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -219,7 +219,7 @@ const Cart = () => {
         paymentStatus: paymentMethod === 'Cash On Delivery' ? 'pending' : 'completed'
       };
 
-      const response = await fetch('https://e-commerce-mern-backend-g3uu.onrender.com/api/order/create-order', {
+      const response = await fetch('https://e-commerce-mern-backend-en61.onrender.com/api/order/create-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
