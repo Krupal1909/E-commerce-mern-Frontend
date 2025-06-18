@@ -22,7 +22,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
   };
 
   // API Configuration
-  const API_BASE_URL = 'https://e-commerce-mern-backend-5izw.onrender.com'; 
+  const API_BASE_URL = 'https://e-commerce-mern-backend-g3uu.onrender.com'; 
 
   // Login API call
   const loginUser = async (email, password) => {

@@ -8,7 +8,7 @@ const ProductsByCategory = () => {
   const [category, setCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const { categoryName } = useParams();
-  const BASE_URL = 'https://e-commerce-mern-backend-5izw.onrender.com';
+  const BASE_URL = 'https://e-commerce-mern-backend-g3uu.onrender.com';
   
   // Get cart functions from context
   const { addToCart, increaseQuantity, decreaseQuantity, cart, getTotalItems } = useCart();
